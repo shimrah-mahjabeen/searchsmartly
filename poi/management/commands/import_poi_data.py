@@ -34,24 +34,24 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.ERROR(f"Unsupported file type: {file_path}"))
 
     def import_csv(self, file_path):
-        with pd.read_csv(file_path, chunksize=1) as csv_file:
-            for chunk in csv_file:
-                try:
-                    ratings_list = self.parse_ratings(str(chunk["poi_ratings"]))
-                    avg_rating = sum(ratings_list) / len(ratings_list) if ratings_list else 0
-                    latitude = float(chunk["poi_latitude"].iloc[0])
-                    longitude = float(chunk["poi_longitude"].iloc[0])
-                    self.create_or_update_data({
-                        "external_ID": chunk["poi_id"].iloc[0],
-                        "name": chunk["poi_name"].iloc[0],
-                        "latitude": latitude,
-                        "longitude": longitude,
-                        "category": chunk["poi_category"].iloc[0],
-                        "avg_rating": avg_rating
-                    })
-                except ValueError as e:
-                    self.stdout.write(self.style.ERROR(f"Error processing row: {e}"))
-                    continue
+        csv_file = pd.read_csv(file_path, chunksize=1)
+        for chunk in csv_file:
+            try:
+                ratings_list = self.parse_ratings(str(chunk["poi_ratings"]))
+                avg_rating = sum(ratings_list) / len(ratings_list) if ratings_list else 0
+                latitude = float(chunk["poi_latitude"].iloc[0])
+                longitude = float(chunk["poi_longitude"].iloc[0])
+                self.create_or_update_data({
+                    "external_ID": chunk["poi_id"].iloc[0],
+                    "name": chunk["poi_name"].iloc[0],
+                    "latitude": latitude,
+                    "longitude": longitude,
+                    "category": chunk["poi_category"].iloc[0],
+                    "avg_rating": avg_rating
+                })
+            except ValueError as e:
+                self.stdout.write(self.style.ERROR(f"Error processing row: {e}"))
+                continue
 
     def import_json(self, file_path):
         with open(file_path, mode="r") as json_file:
